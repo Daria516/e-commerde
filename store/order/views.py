@@ -8,7 +8,9 @@ def start_order(request):
     cart = Cart(request)
     total_price = 0
 
-
+    for item in cart:
+        product = item['product']
+        total_price += product.price * int(item['quantity'])
 
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
@@ -19,7 +21,17 @@ def start_order(request):
         place = request.POST.get('place')
         phone = request.POST.get('phone')
 
-        order = Order.objects.create(user=request.user, first_name=first_name, last_name=last_name, email=email, address=address, zipcode=zipcode, place=place, phone=phone)
+        order = Order.objects.create(
+            user=request.user, 
+            first_name=first_name, 
+            last_name=last_name, 
+            email=email, 
+            address=address, 
+            zipcode=zipcode, 
+            place=place, 
+            phone=phone,
+            paid_amount=total_price
+            )
 
         for item in cart:
             product = item['product']
@@ -29,5 +41,8 @@ def start_order(request):
 
             item = OrderItem.objects.create(order=order, product=product, price=price, quantity=quantity)
 
-        return redirect('myaccount') #Here we want to redirect to the successful
+        cart.clear()
+
+        return redirect('success') #Here we want to redirect to the successful
     return redirect('cart')
+
